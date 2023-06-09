@@ -2,8 +2,10 @@ import re
 
 
 def compound_parse(string):
+    # Get the complex number structure
     pattern = r"\([-]?[0-9]+[+-][0-9]+i\)"
 
+    # Separate complex from operands
     c_numbers = re.findall(pattern, string)
     operands = re.split(pattern, string)
 
@@ -13,6 +15,7 @@ def compound_parse(string):
     operands.pop()
     operands.reverse()
 
+    # Check if the structure is correct
     if c_numbers is not None and len(operands) < len(c_numbers):
         for op in operands:
             if op == '*':
@@ -31,7 +34,7 @@ def compound_parse(string):
                 c_numbers[0] = compound_sub(c_numbers[0], c_numbers[1])
                 c_numbers.remove(c_numbers[1])
 
-            return c_numbers[0]
+        return c_numbers[0]
 
 def compound_mult(str1, str2):
     pattern = r"\(([-]?[0-9]+)([+-][0-9]+)i\)"

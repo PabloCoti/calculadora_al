@@ -1,14 +1,26 @@
+from fractions import Fraction as FR
+
+
+abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
+       'V', 'W', 'X', 'Y', 'Z', ' ']
+
+
 def matrix_convertion(string):
     matrix = []
     rows = string.split('\n')
 
     for r in rows:
         numbers_s = r.split()
-        numbers = [int(n) for n in numbers_s]
+        try:
+            numbers = [int(n) for n in numbers_s]
+
+        except:
+            numbers = [FR(n) for n in numbers_s]
 
         matrix.append(numbers)
 
     return matrix
+
 
 def matrix_mult(matrix1, matrix2):
     if len(matrix1) != 1:
@@ -36,6 +48,7 @@ def matrix_mult(matrix1, matrix2):
             result.append(multiplied_row)
 
         return result
+
 
 def matrix_sum(matrix1, matrix2):
     if len(matrix1) != 1:
@@ -68,6 +81,7 @@ def matrix_sum(matrix1, matrix2):
 
         return result
 
+
 def matrix_sub(matrix1, matrix2):
     if len(matrix1) != 1:
         # Check if the matrices have the same dimensions
@@ -99,6 +113,7 @@ def matrix_sub(matrix1, matrix2):
 
         return result
 
+
 def matrix_traspose(matrix):
     # Get the number of rows and columns in the matrix
     rows = len(matrix)
@@ -108,6 +123,7 @@ def matrix_traspose(matrix):
     transpose = [[matrix[j][i] for j in range(rows)] for i in range(columns)]
 
     return transpose
+
 
 def matrix_invert(matrix):
     # Get the dimensions of the matrix
@@ -145,6 +161,7 @@ def matrix_invert(matrix):
 
     return inverse_matrix
 
+
 def matrix_determinant(matrix):
     # Get the dimensions of the matrix
     n = len(matrix)
@@ -174,3 +191,64 @@ def matrix_determinant(matrix):
         determinant += cofactor * submatrix_determinant
 
     return determinant
+
+
+def message_to_matrix(message):
+    c = 0
+    n_string = ''
+    for l in message:
+        tt = abc.index(l) + 1
+
+        n_string += f"{tt} "
+
+        c += 1
+
+        if c == 3:
+            n_string += '\n'
+
+            c = 0
+
+    s_matrix = matrix_convertion(n_string)
+    s_matrix.pop()
+
+    s_matrix = matrix_traspose(s_matrix)
+
+    return s_matrix
+
+
+def encrypt_matrix(message, key):
+    m_message = message_to_matrix(message)
+    m_key = matrix_convertion(key)
+
+    print(m_message)
+
+    m_encrypted = matrix_mult(m_key, m_message)
+
+    return m_encrypted
+
+
+def decrypt_matrix(matrix, key):
+    e_matrix = matrix_convertion(matrix)
+    m_key = matrix_convertion(key)
+
+    i_key = matrix_invert(m_key)
+
+    m_decrypted = matrix_mult(i_key, e_matrix)
+
+    return m_decrypted
+
+
+def matrix_to_message(matrix):
+    message = ''
+    matrix = matrix_traspose(matrix)
+
+    for r in matrix:
+        for c in r:
+            c = round(c)
+
+            if c > 28:
+                c //= 28
+
+            message += abc[c - 1]
+
+    return message

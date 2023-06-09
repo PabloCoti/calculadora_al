@@ -1,3 +1,4 @@
+from fractions import Fraction as FR
 import re
 
 
@@ -47,6 +48,6 @@ def solve_equation(coefficients, constants, letters):
 
     result = ''
     for n, r in enumerate(solution):
-        result += f"{letters[n]}={r}, "
+        result += f"{letters[n]}={FR(r).limit_denominator()}, "
 
     return result

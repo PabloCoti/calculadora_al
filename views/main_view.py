@@ -1,5 +1,6 @@
+from PyQt5.QtWidgets import QMainWindow
+from fractions import Fraction as FR
 from PyQt5 import uic  # Lanza error, pero es por el pycharm, no porque no funcione
-from PyQt5.QtWidgets import QMainWindow, QFileDialog
 import utils
 
 class MainView(QMainWindow):
@@ -13,15 +14,60 @@ class MainView(QMainWindow):
         self.show()
 
         # Default actions
-        self.frame_matrices_matrizc.hide()
-        self.frame_matrices_matrizd.hide()
+        self.stackedWidget.setCurrentIndex(0)
         self.frame_matrices_matrizb.hide()
+        self.frame_encryption.hide()
+        self.frame_et_password.hide()
 
         # User interactions
         self.pushButton_calcular.clicked.connect(self.calculate_result)
         self.spinBox_matrices_numeromatrices.valueChanged.connect(self.increase_shown_matrix)
         self.spinBox_matrices_numeromatrices.valueChanged.connect(self.increase_hidden_matrix)
-        self.pushButton_matrices_calcular.clicked.connect(self.calculate_matrix_result)
+        self.comboBox_calculator_mode.currentIndexChanged.connect(self.swap_mode)
+
+    def swap_mode(self):
+        if self.comboBox_calculator_mode.currentText() == 'Matrices':
+            self.stackedWidget.setCurrentIndex(1)
+
+        else:
+            self.stackedWidget.setCurrentIndex(0)
+
+        if self.comboBox_calculator_mode.currentText() == 'Encriptar':
+            self.stackedWidget.setCurrentIndex(1)
+            self.frame_encryption.show()
+            self.spinBox_matrices_numeromatrices.hide()
+            self.comboBox_matrix_a_op.hide()
+            self.frame_matrices_matrizb.hide()
+            self.groupBox_ma.setTitle('Contraseña')
+
+        elif self.comboBox_calculator_mode.currentText() == 'Desencriptar':
+            self.stackedWidget.setCurrentIndex(1)
+            self.spinBox_matrices_numeromatrices.hide()
+            self.comboBox_matrix_ab_op.hide()
+            self.comboBox_matrix_a_op.hide()
+            self.frame_matrices_matrizb.show()
+            self.frame_encryption.show()
+            self.lineEdit_e_message.clear()
+            self.frame_matrices_matrizb.setTitle('Matriz encriptada')
+            self.groupBox_ma.setTitle('Contraseña')
+
+        else:
+            self.frame_encryption.hide()
+            self.spinBox_matrices_numeromatrices.show()
+            self.comboBox_matrix_a_op.show()
+            self.frame_matrices_matrizb.hide()
+            self.groupBox_ma.setTitle('Matriz A')
+            self.frame_matrices_matrizb.setTitle('Matriz B')
+
+        if self.comboBox_calculator_mode.currentText() == 'Encriptar (Solo Texto)':
+            self.frame_et_password.show()
+
+        elif self.comboBox_calculator_mode.currentText() == 'Desencriptar (Solo Texto)':
+            self.frame_et_password.show()
+
+        else:
+            self.frame_et_password.hide()
+
 
     def calculate_matrix_result(self):
         a = utils.matrix_convertion(self.textEdit_ma.toPlainText())
@@ -69,7 +115,7 @@ class MainView(QMainWindow):
         if isinstance(m_result, list):
             for r in m_result:
                 for n in r:
-                    result += f"{n}   "
+                    result += f"{FR(n).limit_denominator()}   "
                 result += '\n'
 
             self.textBrowser_matrix_result.setText(result)
@@ -82,37 +128,55 @@ class MainView(QMainWindow):
             self.frame_matrices_matrizb.show()
             self.comboBox_matrix_a_op.hide()
 
-        elif value == 3:
-            self.frame_matrices_matrizc.show()
-
-        elif value == 4:
-            self.frame_matrices_matrizd.show()
-
     def increase_hidden_matrix(self, value):
         if value == 1:
             self.frame_matrices_matrizb.hide()
             self.comboBox_matrix_a_op.show()
 
-        elif value == 2:
-            self.frame_matrices_matrizc.hide()
-
-        elif value == 3:
-            self.frame_matrices_matrizd.hide()
-
     def calculate_result(self):
         op_string = self.textEdit_input.toPlainText()
+        mode = self.comboBox_calculator_mode.currentText()
 
-        if 'i' in op_string:
+        if mode == 'Normal':
+            result = utils.parse_aritmethic(op_string)
+            answer = f"{op_string}\n=\n{FR(result).limit_denominator()}"
+
+            self.update_results(answer)
+
+        elif mode == 'Sistema de Ecuaciones':
+            result = utils.equation_parse(op_string)
+            answer = f"{op_string} \n=\n {result}"
+
+            self.update_results(answer)
+
+        elif mode == 'Números Complejos':
             result = utils.compound_parse(op_string)
             answer = f"{op_string} = {result}"
 
             self.update_results(answer)
 
-        else:
-            result = utils.equation_parse(op_string)
-            answer = f"{op_string} \n=\n {result}"
+        elif mode == 'Matrices':
+            self.calculate_matrix_result()
 
-            self.update_results(answer)
+        elif mode == 'Encriptar':
+            message = self.lineEdit_e_message.text()
+            key = self.textEdit_ma.toPlainText()
+
+            e_matrix = utils.encrypt_matrix(message, key)
+            e_message = utils.matrix_to_message(e_matrix)
+
+            self.update_matrix_results(e_matrix)
+            self.lineEdit_e_message.setText(e_message)
+
+        elif mode == 'Desencriptar':
+            e_matrix = self.textEdit_mb.toPlainText()
+            key = self.textEdit_ma.toPlainText()
+
+            d_matrix = utils.decrypt_matrix(e_matrix, key)
+            d_message = utils.matrix_to_message(d_matrix)
+
+            self.update_matrix_results(d_matrix)
+            self.lineEdit_e_message.setText(d_message)
 
     def update_results(self, string):
         self.textBrowser_result.append(string)
