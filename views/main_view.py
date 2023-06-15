@@ -3,6 +3,7 @@ from fractions import Fraction as FR
 from PyQt5 import uic  # Lanza error, pero es por el pycharm, no porque no funcione
 import utils
 
+
 class MainView(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -68,7 +69,6 @@ class MainView(QMainWindow):
         else:
             self.frame_et_password.hide()
 
-
     def calculate_matrix_result(self):
         a = utils.matrix_convertion(self.textEdit_ma.toPlainText())
 
@@ -107,6 +107,11 @@ class MainView(QMainWindow):
 
             elif opt == 'Determinante':
                 m_result = utils.matrix_determinant(a)
+
+                self.update_matrix_results(m_result)
+
+            elif opt == 'Rango':
+                m_result = utils.matrix_range(a)
 
                 self.update_matrix_results(m_result)
 
@@ -177,6 +182,27 @@ class MainView(QMainWindow):
 
             self.update_matrix_results(d_matrix)
             self.lineEdit_e_message.setText(d_message)
+
+        elif mode == 'Encriptar (Solo Texto)':
+            ui_key = self.lineEdit_et_password.text()
+
+            key = utils.message_to_matrix(ui_key)
+
+            e_matrix = utils.encrypt_matrix(op_string, key)
+            e_message = utils.matrix_to_message(e_matrix)
+
+            self.update_results(e_message)
+
+        elif mode == 'Desencriptar (Solo Texto)':
+            ui_key = self.lineEdit_et_password.text()
+
+            m_matrix = utils.message_to_matrix(op_string)
+            key = utils.message_to_matrix(ui_key)
+
+            e_matrix = utils.decrypt_matrix(m_matrix, key)
+            e_message = utils.matrix_to_message(e_matrix)
+
+            self.update_results(e_message)
 
     def update_results(self, string):
         self.textBrowser_result.append(string)

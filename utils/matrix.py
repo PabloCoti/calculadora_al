@@ -6,20 +6,24 @@ abc = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'Ñ
 
 
 def matrix_convertion(string):
-    matrix = []
-    rows = string.split('\n')
+    if not isinstance(string, list):
+        matrix = []
+        rows = string.split('\n')
 
-    for r in rows:
-        numbers_s = r.split()
-        try:
-            numbers = [int(n) for n in numbers_s]
+        for r in rows:
+            numbers_s = r.split()
+            try:
+                numbers = [int(n) for n in numbers_s]
 
-        except:
-            numbers = [FR(n) for n in numbers_s]
+            except:
+                numbers = [FR(n) for n in numbers_s]
 
-        matrix.append(numbers)
+            matrix.append(numbers)
 
-    return matrix
+        return matrix
+
+    else:
+        return string
 
 
 def matrix_mult(matrix1, matrix2):
@@ -220,8 +224,6 @@ def encrypt_matrix(message, key):
     m_message = message_to_matrix(message)
     m_key = matrix_convertion(key)
 
-    print(m_message)
-
     m_encrypted = matrix_mult(m_key, m_message)
 
     return m_encrypted
@@ -245,10 +247,44 @@ def matrix_to_message(matrix):
     for r in matrix:
         for c in r:
             c = round(c)
+            c //= 28
 
-            if c > 28:
-                c //= 28
+            if c < 0:
+                c *= -1
 
             message += abc[c - 1]
 
     return message
+
+
+def matrix_range(matrix):
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+
+    # Determine the number of rows/columns to consider based on the smaller dimension
+    min_dim = min(num_rows, num_cols)
+
+    # Apply Gaussian elimination
+    for i in range(min_dim):
+        # Find the pivot element (non-zero element) in the current column
+        pivot_row = i
+        while pivot_row < num_rows and matrix[pivot_row][i] == 0:
+            pivot_row += 1
+
+        if pivot_row == num_rows:
+            # No non-zero pivot element found in the current column
+            # All remaining rows are dependent, so the range is i
+            return i
+
+        # Swap rows to bring the pivot element to the current row
+        matrix[i], matrix[pivot_row] = matrix[pivot_row], matrix[i]
+
+        # Eliminate other non-zero elements in the current column
+        for j in range(i + 1, num_rows):
+            factor = matrix[j][i] / matrix[i][i]
+            for k in range(i, num_cols):
+                matrix[j][k] -= factor * matrix[i][k]
+
+    # All rows/columns after the smaller dimension are dependent
+    return min_dim
+
