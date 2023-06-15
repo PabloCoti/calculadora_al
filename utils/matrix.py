@@ -224,6 +224,11 @@ def encrypt_matrix(message, key):
     m_message = message_to_matrix(message)
     m_key = matrix_convertion(key)
 
+    print(m_message)
+
+    if matrix_determinant(m_key) == 0:
+        return 'Error'
+
     m_encrypted = matrix_mult(m_key, m_message)
 
     return m_encrypted
@@ -246,8 +251,11 @@ def matrix_to_message(matrix):
 
     for r in matrix:
         for c in r:
+            print(f"Numero: {c}")
             c = round(c)
-            c //= 28
+
+            c %= 28
+            print(f"Dividido: {c}")
 
             if c < 0:
                 c *= -1

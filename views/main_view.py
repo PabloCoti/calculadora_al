@@ -118,9 +118,17 @@ class MainView(QMainWindow):
     def update_matrix_results(self, m_result):
         result = ''
         if isinstance(m_result, list):
+            result += 'Fractions\n'
             for r in m_result:
                 for n in r:
                     result += f"{FR(n).limit_denominator()}   "
+                result += '\n'
+
+            result += '\nDecimals\n'
+            for r in m_result:
+                for n in r:
+                    result += f"{float(n)}"
+
                 result += '\n'
 
             self.textBrowser_matrix_result.setText(result)
@@ -167,21 +175,28 @@ class MainView(QMainWindow):
             message = self.lineEdit_e_message.text()
             key = self.textEdit_ma.toPlainText()
 
+            self.lineEdit_e_message.setText(f"Matriz original:\n{utils.message_to_matrix(message)}")
+
             e_matrix = utils.encrypt_matrix(message, key)
-            e_message = utils.matrix_to_message(e_matrix)
+
+            if e_matrix != 'Error':
+                e_message = utils.matrix_to_message(e_matrix)
+                self.lineEdit_e_message.setText(e_message)
+
 
             self.update_matrix_results(e_matrix)
-            self.lineEdit_e_message.setText(e_message)
 
         elif mode == 'Desencriptar':
             e_matrix = self.textEdit_mb.toPlainText()
             key = self.textEdit_ma.toPlainText()
 
             d_matrix = utils.decrypt_matrix(e_matrix, key)
-            d_message = utils.matrix_to_message(d_matrix)
+
+            if e_matrix != 'Error':
+                d_message = utils.matrix_to_message(d_matrix)
+                self.lineEdit_e_message.setText(d_message)
 
             self.update_matrix_results(d_matrix)
-            self.lineEdit_e_message.setText(d_message)
 
         elif mode == 'Encriptar (Solo Texto)':
             ui_key = self.lineEdit_et_password.text()
